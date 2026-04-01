@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian Markdown Viewer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div>
+                <h1>Obsidian MD Viewer</h1>
+                <p>Відкривайте сховище, переглядайте *.md та створюйте нові нотатки.</p>
+            </div>
+            <div class="toolbar">
+                <button id="open-vault">Відкрити сховище</button>
+                <button id="import-files">Імпортувати .md</button>
+                <button id="import-folder">Імпортувати папку</button>
+                <button id="new-note">Нова нотатка</button>
+                <button id="save-note">Зберегти нотатку</button>
+            </div>
+        </header>
+
+        <main class="layout">
+            <aside class="sidebar">
+                <section class="panel">
+                    <h2>Файли</h2>
+                    <div id="files" class="file-list">
+                        <div class="empty-state">Відкрийте папку або імпортуйте файли, щоб почати.</div>
+                    </div>
+                </section>
+                <section class="panel metadata">
+                    <div class="meta-row">
+                        <label>Назва:</label>
+                        <input id="note-title" type="text" placeholder="Без назви" />
+                    </div>
+                    <div class="meta-row">
+                        <label>Статус:</label>
+                        <span id="status">Готово</span>
+                    </div>
+                </section>
+            </aside>
+
+            <section class="content">
+                <div class="editor-panel">
+                    <div class="panel-heading">
+                        <h2>Редактор</h2>
+                        <span id="editor-mode">MD</span>
+                    </div>
+                    <textarea id="editor" placeholder="Вставте Markdown тут..."></textarea>
+                </div>
+                <div class="preview-panel">
+                    <div class="panel-heading">
+                        <h2>Попередній перегляд</h2>
+                    </div>
+                    <article id="preview" class="preview"></article>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <input id="file-input" type="file" accept=".md" multiple hidden />
+    <input id="folder-input" type="file" accept=".md" webkitdirectory directory multiple hidden />
+    <script src="script.js"></script>
+</body>
+</html>
