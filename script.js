@@ -10,12 +10,151 @@ const editor = document.getElementById('editor');
 const preview = document.getElementById('preview');
 const noteTitleInput = document.getElementById('note-title');
 const status = document.getElementById('status');
+const appTitle = document.getElementById('app-title');
+const appDesc = document.getElementById('app-desc');
+const filesHeading = document.getElementById('files-heading');
+const emptyState = document.getElementById('empty-state');
+const nameLabel = document.getElementById('name-label');
+const statusLabel = document.getElementById('status-label');
+const editorHeading = document.getElementById('editor-heading');
+const languageSelect = document.getElementById('language-select');
+const togglePreviewInput = document.getElementById('toggle-preview');
+const previewLabel = document.getElementById('preview-label');
 
 let vaultHandle = null;
 let currentFileHandle = null;
 let currentFileName = null;
 let fileList = [];
 let folderFiles = [];
+let currentLang = 'en';
+let isLivePreview = false;
+
+
+const i18n = {
+  en: {
+    title: 'Obsidian Markdown Viewer',
+    description: 'Open a vault, view .md and create new notes in Markdown.',
+    openVault: 'Open vault',
+    importFiles: 'Import .md',
+    importFolder: 'Import folder',
+    newNote: 'New note',
+    saveNote: 'Save note',
+    enableLivePreview: 'Enable Live Preview',
+    disableLivePreview: 'Disable Live Preview',
+    files: 'Files',
+    name: 'Title:',
+    status: 'Status:',
+    editor: 'Editor',
+    preview: 'Live Preview',
+    previewActive: 'Preview ON',
+    editorPlaceholder: 'Type Markdown here...',
+    emptyState: 'Open a folder or import files to start.',
+    welcome: 'Welcome! Select a file or create a new note.',
+    ready: 'Ready',
+    unsupportedFolder: 'Your browser does not support directory picker. Import files/folder manually.',
+    noMdInFolder: 'No .md files found in folder.',
+    openedVault: 'Opened vault: ',
+    saved: 'Saved: ',
+    downloaded: 'Downloaded: ',
+    newNoteCreated: 'New note created',
+    alreadyImported: 'Files already imported.',
+    selectMd: 'Select .md files.',
+    vaultCancelled: 'Vault open cancelled.',
+    errorOpen: 'Error opening file',
+    errorSave: 'Could not save note',
+    imported: 'Imported {n} file(s)'
+  },
+  uk: {
+    title: 'Переглядач Obsidian Markdown',
+    description: 'Відкривайте сховище, переглядайте .md та створюйте нотатки у Markdown.',
+    openVault: 'Відкрити сховище',
+    importFiles: 'Імпортувати .md',
+    importFolder: 'Імпортувати папку',
+    newNote: 'Нова нотатка',
+    saveNote: 'Зберегти нотатку',
+    enableLivePreview: 'Увімкнути Live Preview',
+    disableLivePreview: 'Вимкнути Live Preview',
+    files: 'Файли',
+    name: 'Назва:',
+    status: 'Статус:',
+    editor: 'Редактор',
+    preview: 'Попередній перегляд',
+    previewActive: 'Перегляд ВКЛ',
+    editorPlaceholder: 'Вставте Markdown тут...',
+    emptyState: 'Відкрийте папку або імпортуйте файли, щоб почати.',
+    welcome: 'Ласкаво просимо! Виберіть файл або створіть нову нотатку.',
+    ready: 'Готово',
+    unsupportedFolder: 'Ваш браузер не підтримує вибір папки. Імпортуйте файли/папку вручну.',
+    noMdInFolder: 'У папці не знайдено .md файлів.',
+    openedVault: 'Відкрито сховище: ',
+    saved: 'Збережено: ',
+    downloaded: 'Завантажено: ',
+    newNoteCreated: 'Створено нову нотатку',
+    alreadyImported: 'Файли вже імпортовані.',
+    selectMd: 'Виберіть файли .md.',
+    vaultCancelled: 'Відкриття сховища скасовано.',
+    errorOpen: 'Помилка відкриття файлу',
+    errorSave: 'Не вдалося зберегти нотатку',
+    imported: 'Імпортовано {n} файл(ів)'
+  }
+};
+
+function localize(template, params = {}) {
+  return template.replace(/\{(\w+)\}/g, (_, key) => params[key] ?? '');
+}
+
+function applyLanguage(lang) {
+  currentLang = lang;
+  const t = i18n[lang];
+  document.title = t.title;
+  appTitle.textContent = t.title;
+  appDesc.textContent = t.description;
+  openVaultButton.textContent = t.openVault;
+  importButton.textContent = t.importFiles;
+  importFolderButton.textContent = t.importFolder;
+  newNoteButton.textContent = t.newNote;
+  saveNoteButton.textContent = t.saveNote;
+  filesHeading.textContent = t.files;
+  nameLabel.textContent = t.name;
+  statusLabel.textContent = t.status;
+  editorHeading.textContent = t.editor;
+  previewLabel.textContent = t.preview;
+  editor.placeholder = t.editorPlaceholder;
+  emptyState.textContent = t.emptyState;
+  setStatus(t.ready);
+}
+
+languageSelect.addEventListener('change', () => applyLanguage(languageSelect.value));
+
+togglePreviewInput.addEventListener('change', () => {
+  setModePreview(togglePreviewInput.checked);
+});
+
+function setModePreview(previewMode) {
+  isLivePreview = previewMode;
+  if (isLivePreview) {
+    editor.style.display = 'none';
+    preview.style.display = 'block';
+    previewHeading.style.display = 'block';
+    previewLabel.textContent = i18n[currentLang].previewActive;
+  } else {
+    editor.style.display = 'block';
+    preview.style.display = 'none';
+    previewHeading.style.display = 'none';
+    previewLabel.textContent = i18n[currentLang].preview;
+    editor.focus();
+  }
+}
+
+
+// if user starts typing in preview mode, switch back to editor mode
+document.addEventListener('keydown', (event) => {
+  if (!isLivePreview) return;
+  if (event.metaKey || event.ctrlKey || event.altKey) return;
+  if (event.key.length === 1 || event.key === 'Backspace' || event.key === 'Enter' || event.key === 'Tab') {
+    setModePreview(false);
+  }
+});
 
 function setStatus(message) {
   status.textContent = message;
@@ -75,8 +214,9 @@ function renderPreview(markdown) {
 }
 
 async function openVault() {
+  const t = i18n[currentLang];
   if (!window.showDirectoryPicker) {
-    setStatus('Ваш браузер не підтримує вибір папки. Імпортуйте файли або папку вручну.');
+    setStatus(t.unsupportedFolder);
     folderInput.click();
     return;
   }
@@ -87,14 +227,14 @@ async function openVault() {
     folderFiles = [];
     await walkDirectory(vaultHandle);
     if (!fileList.length) {
-      setStatus('У папці не знайдено .md файлів.');
+      setStatus(t.noMdInFolder);
     } else {
-      setStatus(`Відкрито сховище: ${vaultHandle.name}`);
+      setStatus(`${t.openedVault}${vaultHandle.name}`);
     }
     renderFileList();
   } catch (error) {
     console.warn(error);
-    setStatus('Відкриття сховища скасоване.');
+    setStatus(t.vaultCancelled);
   }
 }
 
@@ -112,9 +252,10 @@ async function walkDirectory(dirHandle, path = '') {
 }
 
 function importFiles(files) {
+  const t = i18n[currentLang];
   const imported = Array.from(files).filter((file) => file.name.toLowerCase().endsWith('.md'));
   if (!imported.length) {
-    setStatus('Виберіть файли *.md.');
+    setStatus(t.selectMd);
     return;
   }
 
@@ -128,7 +269,7 @@ function importFiles(files) {
   });
 
   if (!added) {
-    setStatus('Файли вже імпортовані.');
+    setStatus(t.alreadyImported);
     return;
   }
 
@@ -137,7 +278,7 @@ function importFiles(files) {
     const first = fileList.find((item) => item.file);
     if (first) openFile(first);
   }
-  setStatus(`Імпортовано ${added} файл(ів)`);
+  setStatus(localize(t.imported, { n: added }));
 }
 
 function createFrontmatter(title) {
@@ -151,7 +292,8 @@ date: ${date}
 }
 
 function createNewNote() {
-  const title = `Нова нотатка`;
+  const t = i18n[currentLang];
+  const title = currentLang === 'uk' ? 'Нова нотатка' : 'New note';
   const filename = `${sanitizeFileName(title)}.md`;
   const content = `${createFrontmatter(title)}# ${title}
 
@@ -163,7 +305,7 @@ function createNewNote() {
   renderPreview(content);
   fileList.unshift({ name: filename, file: null, handle: null, newNote: true });
   renderFileList();
-  setStatus('Створено нову нотатку');
+  setStatus(t.newNoteCreated);
 }
 
 async function saveCurrentNote() {
@@ -173,6 +315,7 @@ async function saveCurrentNote() {
   let targetHandle = currentFileHandle;
   let savedName = filename;
 
+  const t = i18n[currentLang];
   try {
     if (vaultHandle) {
       if (!targetHandle) {
@@ -188,7 +331,7 @@ async function saveCurrentNote() {
         fileList.unshift({ name: filename, handle: targetHandle });
       }
       renderFileList();
-      setStatus(`Збережено: ${filename}`);
+      setStatus(`${t.saved}${filename}`);
       return;
     }
 
@@ -199,10 +342,10 @@ async function saveCurrentNote() {
     anchor.download = filename;
     anchor.click();
     URL.revokeObjectURL(url);
-    setStatus(`Завантажено: ${filename}`);
+    setStatus(`${t.downloaded}${filename}`);
   } catch (error) {
     console.error(error);
-    setStatus('Не вдалося зберегти нотатку');
+    setStatus(t.errorSave);
   }
 }
 
@@ -236,5 +379,6 @@ filesContainer.addEventListener('drop', (event) => {
 newNoteButton.addEventListener('click', createNewNote);
 saveNoteButton.addEventListener('click', saveCurrentNote);
 
-renderPreview('Ласкаво просимо! Виберіть файл або створіть нову нотатку.');
-setStatus('Готово');
+applyLanguage('en');
+setModePreview(false);
+renderPreview(i18n[currentLang].welcome);

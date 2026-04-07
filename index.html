@@ -11,51 +11,61 @@
     <div class="app-shell">
         <header class="topbar">
             <div>
-                <h1>Obsidian MD Viewer</h1>
-                <p>Відкривайте сховище, переглядайте *.md та створюйте нові нотатки.</p>
+                <h1 id="app-title">Obsidian Markdown Viewer</h1>
+                <p id="app-desc">Open a vault, view .md and create new notes in Markdown.</p>
             </div>
             <div class="toolbar">
-                <button id="open-vault">Відкрити сховище</button>
-                <button id="import-files">Імпортувати .md</button>
-                <button id="import-folder">Імпортувати папку</button>
-                <button id="new-note">Нова нотатка</button>
-                <button id="save-note">Зберегти нотатку</button>
+                <div class="lang-switch">
+                    <label for="language-select">Language:</label>
+                    <select id="language-select">
+                        <option value="en" selected>English</option>
+                        <option value="uk">Українська</option>
+                    </select>
+                </div>
+                <button id="open-vault">Open vault</button>
+                <button id="import-files">Import .md</button>
+                <button id="import-folder">Import folder</button>
+                <button id="new-note">New note</button>
+                <button id="save-note">Save note</button>
             </div>
         </header>
 
         <main class="layout">
             <aside class="sidebar">
                 <section class="panel">
-                    <h2>Файли</h2>
+                    <h2 id="files-heading">Files</h2>
                     <div id="files" class="file-list">
-                        <div class="empty-state">Відкрийте папку або імпортуйте файли, щоб почати.</div>
+                        <div class="empty-state" id="empty-state">Open a folder or import files to start.</div>
                     </div>
                 </section>
                 <section class="panel metadata">
                     <div class="meta-row">
-                        <label>Назва:</label>
-                        <input id="note-title" type="text" placeholder="Без назви" />
+                        <label id="name-label">Title:</label>
+                        <input id="note-title" type="text" placeholder="Untitled" />
                     </div>
                     <div class="meta-row">
-                        <label>Статус:</label>
-                        <span id="status">Готово</span>
+                        <label id="status-label">Status:</label>
+                        <span id="status">Ready</span>
                     </div>
                 </section>
             </aside>
 
             <section class="content">
                 <div class="editor-panel">
-                    <div class="panel-heading">
-                        <h2>Редактор</h2>
-                        <span id="editor-mode">MD</span>
+                    <div class="panel-heading with-switch">
+                        <h2 id="editor-heading">Editor</h2>
+                        <div class="preview-controls">
+                            <span id="preview-label">Preview</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="toggle-preview" />
+                                <span class="slider"></span>
+                            </label>
+                        </div>
                     </div>
-                    <textarea id="editor" placeholder="Вставте Markdown тут..."></textarea>
-                </div>
-                <div class="preview-panel">
-                    <div class="panel-heading">
-                        <h2>Попередній перегляд</h2>
+                    <div class="editor-preview-wrapper">
+                        <article id="preview" class="preview"></article>
+                        <textarea id="editor" placeholder="Type Markdown here..."></textarea>
                     </div>
-                    <article id="preview" class="preview"></article>
                 </div>
             </section>
         </main>
